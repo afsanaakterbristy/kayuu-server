@@ -20,6 +20,7 @@ async function run() {
     try {
            const categorysCollection = client.db('products').collection('categorys');
            const allcategoryCollection = client.db('products').collection('allcategory');
+           const bookingsCollection = client.db('products').collection('bookings');
       
         //for categorys
 
@@ -40,7 +41,13 @@ async function run() {
         res.send(options);
        })
 
-      
+       // for bookings 
+
+       app.post('/bookings', async (req, res) => {
+          const booking = req.body;
+          const result = await bookingsCollection.insertOne(booking)
+          res.send(result)
+      })
  
         
     } finally {
