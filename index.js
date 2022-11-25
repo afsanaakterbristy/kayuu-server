@@ -45,25 +45,9 @@ async function run() {
            const allcategoryCollection = client.db('products').collection('allcategory');
            const bookingsCollection = client.db('products').collection('bookings');
            const usersCollection = client.db('products').collection('users');
+           const productCollection = client.db('products').collection('product');
 
-        
-      
-     
        
-      //     //it will use after verify jwt
-      //   const verifyAdmin = async (req, res, next) => {
-      //        const decodedEmail = req.decoded.email;
-      //       const query = { email: decodedEmail };
-      //       const user = await usersCollection.findOne(query);
-
-      //       if (user?.role !== 'admin') {
-      //           return res.status(403).send({message: 'forbidden access'})
-      //       }
-           
-      //       next() 
-      //   }
-
-      
       
         //for categorys
 
@@ -83,6 +67,17 @@ async function run() {
         const options = await allcategoryCollection.find(filter).toArray();
         res.send(options);
        })
+
+
+       //add get product one product
+    app.get('/allcategoryproduct', async (req, res) => {
+            const query = {}
+            const result = await allcategoryCollection.find(query).project({ category_id: 1 }).toArray();
+            res.send(result);
+        })
+       //post product
+       
+        
 
        // for bookings 
 
@@ -166,7 +161,20 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
+            })
+
+            app.get('/product', async (req, res) => {
+            const query = {};
+            const product = await productCollection.find(query).toArray();
+            res.send(product);
         })
+        
+           app.post('/product',async (req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product);
+            res.send(result);
+        });
+        
         
     } finally {
         
