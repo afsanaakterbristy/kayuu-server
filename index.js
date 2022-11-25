@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const jwt=require('jsonwebtoken')
+const jwt =require('jsonwebtoken')
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -18,23 +18,26 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@bristy.
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
-
+//for jwt function
 function verifyJWT(req, res, next) {
+
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-        return res.status(401).sent('unauthorized access')
+        return res.status(401).send('unauthorized access');
     }
+
     const token = authHeader.split(' ')[1];
 
     jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
         if (err) {
-            return res.status(403).send({message:'forbidden access'})
+            return res.status(403).send({ message: 'forbidden access' })
         }
         req.decoded = decoded;
         next();
     })
-    
+
 }
+
 
 async function run() {
     try {
@@ -43,6 +46,9 @@ async function run() {
            const bookingsCollection = client.db('products').collection('bookings');
            const usersCollection = client.db('products').collection('users');
 
+        
+      
+     
        
       //     //it will use after verify jwt
       //   const verifyAdmin = async (req, res, next) => {
@@ -56,6 +62,8 @@ async function run() {
            
       //       next() 
       //   }
+
+      
       
         //for categorys
 
@@ -79,17 +87,17 @@ async function run() {
        // for bookings 
 
 
-           app.get('/bookings',verifyJWT, async (req, res) => {
+            app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
-            // const decodedEmail = req.decoded.email;
+            const decodedEmail = req.decoded.email;
 
-            // if (email !== decodedEmail) {
-            //     return res.status(403).send({ message: 'forbidden access' });
-            // }
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'forbidden access' });
+            }
+
             const query = { email: email };
-          
-            const Bookings = await bookingsCollection.find(query).toArray();
-            res.send(Bookings)
+            const bookings = await bookingsCollection.find(query).toArray();
+            res.send(bookings);
         })
 
 
@@ -99,18 +107,20 @@ async function run() {
           res.send(result)
        })
        
-         //FOR TOKEN
-        app.get('/jwt', async (req, res) => {
+    //token jwt
+            app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
-            const user = await usersCollection.findOne(query)
+            const user = await usersCollection.findOne(query);
+            //console.log(user);
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
-                return res.send({accessToken:token})
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
+                return res.send({ accessToken: token });
             }
-            
-            res.status(403).send({accessToken:''})
-        })
+            res.status(403).send({ accessToken: '' })
+        });
+ 
+     
 
        //user
     app.post('/users', async (req, res) => {
