@@ -136,7 +136,7 @@ async function run() {
             const filter = {_id: ObjectId(id)}
             const updatedDoc = {
                 $set: {
-                    paid: true,
+                    paid: true, 
                     transactionId: payment.transactionId
                 }
             }
@@ -174,6 +174,23 @@ async function run() {
             res.send(result);
         })
 
+//seller
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.option === 'seller' });
+        })
+
+        //buyer
+
+            app.get('/users/buyer/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isBuyer: user?.option === 'Buyer' });
+        })
+
         //admincheck
 
         
@@ -190,8 +207,8 @@ async function run() {
             const result = await usersCollection.insertOne(user);
             res.send(result);
           })
-//make admin
-            app.put('/users/admin/:id',verifyJWT, async (req, res) => {
+      //make admin
+          app.put('/users/admin/:id',verifyJWT, async (req, res) => {
            const decodedEmail = req.decoded.email;
            const query = { email: decodedEmail };
            const user = await usersCollection.findOne(query);
