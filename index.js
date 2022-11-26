@@ -73,11 +73,44 @@ async function run() {
        //add get product one product
     app.get('/allcategoryproduct', async (req, res) => {
             const query = {}
-            const result = await allcategoryCollection.find(query).project({ category_id: 1 }).toArray();
+            const result = await categorysCollection.find(query).project({ name: 1 }).toArray();
             res.send(result);
         })
-       //post product
-       
+       //make report like admin form all category
+        
+       app.put('/users/report/:id',verifyJWT, async (req, res) => {
+    
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    role: 'report'
+                }
+            }
+            const result = await allcategoryCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+          })
+
+
+
+          //role deleting
+        
+        app.put('/users/notreport/:id',verifyJWT, async (req, res) => {
+    
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    role: 'notreport'
+                }
+            }
+            const result = await allcategoryCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+          })
+        
+        
         
 
        // for bookings 
@@ -143,8 +176,19 @@ async function run() {
             const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
             res.send(result);
         })
+
+        //jwt
+           app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.STRIPE_SECRET);
+            res.send({ token })
+            
+        })
        
     //token jwt
+  
+
+
             app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
@@ -203,10 +247,16 @@ async function run() {
 
     app.post('/users', async (req, res) => {
             const user = req.body;
-            console.log(user);
+           
+        const query = { email:user.email }
+        const allreadySave = await usersCollection.find(query).toArray();
+        if (allreadySave.length) {
+            return res.send({message:"user already exist"})
+        }
             const result = await usersCollection.insertOne(user);
             res.send(result);
-          })
+    })
+    
       //make admin
           app.put('/users/admin/:id',verifyJWT, async (req, res) => {
            const decodedEmail = req.decoded.email;
@@ -227,8 +277,74 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
-            })
+          })
+        
+        //make seller verify rol
 
+  app.put('/users/seller/:id',verifyJWT, async (req, res) => {
+        //    const decodedEmail = req.decoded.email;
+        //    const query = { email: decodedEmail };
+        //    const user = await usersCollection.findOne(query);
+
+        //     if (user?.role !== 'verify') {
+        //         return res.status(403).send({ message: 'forbidden access' })
+        //     }
+
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    role: 'verify'
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+  })
+        
+          app.get('/users/sellerverify/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isVerify: user?.role === 'verify' });
+          })
+        
+        
+       // make available product role
+
+        
+         app.put('/users/available/:id',verifyJWT, async (req, res) => {
+        //    const decodedEmail = req.decoded.email;
+        //    const query = { email: decodedEmail };
+        //    const user = await usersCollection.findOne(query);
+
+        //     if (user?.role !== 'admin') {
+        //         return res.status(403).send({ message: 'forbidden access' })
+        //     }
+
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    role: 'available'
+                }
+            }
+            const result = await productCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+         })
+        
+        
+        //get available product role for useavailable
+
+            app.get('/users/available/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await productCollection.findOne(query);
+            res.send({ isAvailable: user?.role === 'available' });
+          })
+
+ 
             app.get('/product', async (req, res) => {
             const query = {};
             const product = await productCollection.find(query).toArray();
