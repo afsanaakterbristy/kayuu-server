@@ -48,7 +48,35 @@ async function run() {
            const productCollection = client.db('products').collection('product');
            const paymentsCollection = client.db('products').collection('payments');
 
+       //another work make category2
+         
+           const allcategorytwoCollection = client.db('products').collection('allcategorytwo');
+        app.get('/categorystwo', async(req, res) => {
+            const query = {};
+            const options = await categorysCollection.find(query).toArray();
+             res.send(options);
+            })
+
+     app.get('/producttwo', async (req, res) => {
+            const query = {};
+            const product = await productCollection.find(query).toArray();
+            res.send(product);
+     })
+        
+           app.get('/categorystwo/:id', async (req, res) => {
+        const id = req.params.id;
+        // console.log(id);
+         const filter = { category_id:(id) } 
+       // console.log(filter)       
+        const options = await productCollection.find(filter).toArray();
+        res.send(options);
+       })
        
+        
+
+
+
+        // another work
       
         //for categorys
 
@@ -62,18 +90,19 @@ async function run() {
             const options = await allcategoryCollection.find(query).toArray();
              res.send(options);
          })
-      app.get('/categorys/:id', async (req, res) => {
+     
+        app.get('/categorys/:id', async (req, res) => {
         const id = req.params.id;
         const filter = { category_id: ObjectId(id) }           
         const options = await allcategoryCollection.find(filter).toArray();
         res.send(options);
-       })
+         })
 
 
        //add get product one product
     app.get('/allcategoryproduct', async (req, res) => {
             const query = {}
-            const result = await categorysCollection.find(query).project({ name: 1 }).toArray();
+            const result = await categorysCollection.find(query).project({ _id: 1, name: 1 }).toArray();
             res.send(result);
         })
        //make report like admin form all category
@@ -85,10 +114,10 @@ async function run() {
             const options = { upsert: true };
             const updatedDoc = {
                 $set: {
-                    role: 'report'
+                    report: 'report'
                 }
             }
-            const result = await allcategoryCollection.updateOne(filter, updatedDoc, options);
+            const result = await productCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
           })
 
@@ -103,10 +132,10 @@ async function run() {
             const options = { upsert: true };
             const updatedDoc = {
                 $set: {
-                    role: 'notreport'
+                    report: 'notreport'
                 }
             }
-            const result = await allcategoryCollection.updateOne(filter, updatedDoc, options);
+            const result = await productCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
           })
         
@@ -177,13 +206,7 @@ async function run() {
             res.send(result);
         })
 
-        //jwt
-           app.post('/jwt', (req, res) => {
-            const user = req.body;
-            const token = jwt.sign(user, process.env.STRIPE_SECRET);
-            res.send({ token })
-            
-        })
+       
        
     //token jwt
   
@@ -355,7 +378,8 @@ async function run() {
             const product = req.body;
             const result = await productCollection.insertOne(product);
             res.send(result);
-        });
+           });
+        
            app.delete('/product/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
