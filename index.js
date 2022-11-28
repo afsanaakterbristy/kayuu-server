@@ -14,7 +14,6 @@ app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@bristy.ogzpuzu.mongodb.net/?retryWrites=true&w=majority`;
-
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
@@ -47,7 +46,8 @@ async function run() {
            const usersCollection = client.db('products').collection('users');
            const productCollection = client.db('products').collection('product');
            const paymentsCollection = client.db('products').collection('payments');
-//for admin veryfy
+        
+    // admin veryfy
      const verifyAdmin = async (req, res, next) => {
              const decodedEmail = req.decoded.email;
             const query = { email: decodedEmail };
@@ -60,7 +60,7 @@ async function run() {
             next() 
         }
 
-//seller verify
+    //seller verify
           const verifySeller = async (req, res, next) => {
              const decodedEmail = req.decoded.email;
             const query = { email: decodedEmail };
@@ -75,34 +75,34 @@ async function run() {
 
 
 
-       //another work make category2
+       // make category
          
-           const allcategorytwoCollection = client.db('products').collection('allcategorytwo');
-        app.get('/categorystwo', async(req, res) => {
+            const allcategorytwoCollection = client.db('products').collection('allcategorytwo');
+            app.get('/categorystwo', async(req, res) => {
             const query = {};
             const options = await categorysCollection.find(query).toArray();
              res.send(options);
             })
 
-     app.get('/producttwo', async (req, res) => {
+            app.get('/producttwo', async (req, res) => {
             const query = {};
             const product = await productCollection.find(query).toArray();
             res.send(product);
-     })
+            })
         
            app.get('/categorystwo/:id', async (req, res) => {
-        const id = req.params.id;
+           const id = req.params.id;
         // console.log(id);
-         const filter = { category_id:(id),status:'unsold' } 
+           const filter = { category_id:(id),status:'unsold' } 
        // console.log(filter)       
-        const options = await productCollection.find(filter).toArray();
+           const options = await productCollection.find(filter).toArray();
         res.send(options);
        })
        
-        // update
+     
 
-             //   temporary to update price field on appointment
-        //  app.get('/addPrice', async (req, res) => {
+    //   temporary to update  field 
+        //  app.get('/add', async (req, res) => {
         //     const filter = {}
         //     const options = { upsert: true }
         //     const updatedDoc = {
@@ -116,9 +116,6 @@ async function run() {
         // })
         
 
-
-
-        // another work
       
         //for categorys
 
@@ -141,13 +138,13 @@ async function run() {
          })
 
 
-       //add get product one product
-    app.get('/allcategoryproduct', async (req, res) => {
+       // get product 
+       app.get('/allcategoryproduct', async (req, res) => {
             const query = {}
             const result = await categorysCollection.find(query).project({ _id: 1, name: 1 }).toArray();
             res.send(result);
         })
-       //make report like admin form all category
+       //make report  all category
         
        app.put('/users/report/:id',verifyJWT, async (req, res) => {
     
@@ -165,7 +162,7 @@ async function run() {
 
 
 
-          //role deleting
+        //role 
         
         app.put('/users/notreport/:id',verifyJWT, async (req, res) => {
     
@@ -183,7 +180,6 @@ async function run() {
         
        // for bookings 
 
-
             app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
@@ -195,7 +191,8 @@ async function run() {
             const query = { email: email };
             const bookings = await bookingsCollection.find(query).toArray();
             res.send(bookings);
-        })
+            })
+        
 
          app.get('/bookings/:id', async (req, res) => {
             const id = req.params.id;
@@ -218,7 +215,7 @@ async function run() {
             res.send(product);
         })
 
-       //for payment
+       //for payment method
 
          app.post('/create-payment-intent', async (req, res) => {
             const booking = req.body;
@@ -268,10 +265,8 @@ async function run() {
 
        
        
-    //token jwt
+    // make token jwt
   
-
-
             app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
@@ -286,7 +281,7 @@ async function run() {
  
      
 
-       //user
+       //user get
         
         app.get('/users', async (req, res) => {
             const query = {};
@@ -301,7 +296,8 @@ async function run() {
             res.send(result);
         })
 
-//seller
+       //seller get
+        
         app.get('/users/seller/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email }
@@ -309,7 +305,7 @@ async function run() {
             res.send({ isSeller: user?.option === 'seller' });
         })
 
-        //buyer
+        //buyer get
 
             app.get('/users/buyer/:email', async (req, res) => {
             const email = req.params.email;
@@ -318,7 +314,7 @@ async function run() {
             res.send({ isBuyer: user?.option === 'Buyer' });
         })
 
-        //admincheck
+        //admin get
 
         
         app.get('/users/admin/:email', async (req, res) => {
@@ -328,9 +324,8 @@ async function run() {
             res.send({ isAdmin: user?.role === 'admin' });
         })
 
-    app.post('/users', async (req, res) => {
-            const user = req.body;
-           
+        app.post('/users', async (req, res) => {
+        const user = req.body;           
         const query = { email:user.email }
         const allreadySave = await usersCollection.find(query).toArray();
         if (allreadySave.length) {
@@ -338,8 +333,9 @@ async function run() {
         }
             const result = await usersCollection.insertOne(user);
             res.send(result);
-    })
+      })
     
+      
       //make admin
           app.put('/users/admin/:id',verifyJWT, async (req, res) => {
            const decodedEmail = req.decoded.email;
@@ -362,9 +358,9 @@ async function run() {
             res.send(result);
           })
         
-        //make seller verify rol
+        //make seller verify role
 
-  app.put('/users/seller/:id',verifyJWT, async (req, res) => {
+          app.put('/users/seller/:id',verifyJWT, async (req, res) => {
        
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
@@ -374,20 +370,20 @@ async function run() {
                     role: 'verify'
                 }
             }
-      const result = await usersCollection.updateOne(filter, updatedDoc, options);
-      const resultTwo = await usersCollection.findOne(filter);
-      const email = resultTwo.email;
-      const filtertwo = { email: email };
-      const updatedDoctwo = {
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            const resultTwo = await usersCollection.findOne(filter);
+            const email = resultTwo.email;
+            const filtertwo = { email: email };
+            const updatedDoctwo = {
                $set: {
                    sellerverify: true
                }
            }
-      const updateproduct = await productCollection.updateMany(filtertwo, updatedDoctwo, options);
-      console.log(updateproduct)
+            const updateproduct = await productCollection.updateMany(filtertwo, updatedDoctwo, options);
+            // console.log(updateproduct)
 
             res.send(result);
-  })
+          })
         
         
         
@@ -399,18 +395,11 @@ async function run() {
           })
         
         
-       // make available product role
+        // make available product role
 
         
          app.put('/users/available/:id',verifyJWT, async (req, res) => {
-        //    const decodedEmail = req.decoded.email;
-        //    const query = { email: decodedEmail };
-        //    const user = await usersCollection.findOne(query);
-
-        //     if (user?.role !== 'admin') {
-        //         return res.status(403).send({ message: 'forbidden access' })
-        //     }
-
+       
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
             const options = { upsert: true };
@@ -452,6 +441,7 @@ async function run() {
             res.send(result);
            });
         
+        
            app.delete('/product/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
@@ -460,9 +450,9 @@ async function run() {
            })
         
            
-        //my product email check
+        //product email check
 
-      app.get('/products', verifyJWT, async (req, res) => {
+        app.get('/products', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
          //  console.log(email,decodedEmail)
@@ -477,13 +467,6 @@ async function run() {
             res.send(product);
         })
 
-
-
-          
-
-        
-        
-        
         
     } finally {
         
